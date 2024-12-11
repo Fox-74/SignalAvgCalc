@@ -1,43 +1,66 @@
 #include <iostream>
 #include <cmath>
-#include <vector>
-#include <functional>
 
-// Параметры сигнала
-double A = 1.0;     // Амплитуда
-double f0 = 50.0;   // Частота сигнала (в Гц)
-double phi = 0.0;   // Фазовый сдвиг (в радианах)
-double C = 0.0;     // Постоянная составляющая
-double T = 1.0 / f0; // Период сигнала
+// Структура параметров сигнала
+struct SignalParams {
+    double A;    // Амплитуда
+    double f0;   // Частота
+    double phi;  // Фазовый сдвиг
+    double C;    // Постоянная составляющая
+};
 
-// Определение произвольной формы сигнала g(x)
-double g(double x) {
-    return std::sin(x); // Пример: синусоидальная форма
+// Типы сигналов
+enum class SignalType { Sine, Square, Triangle };
+
+// Форма сигнала
+double g(double x, SignalType type) {
+    switch (type) {
+        case SignalType::Sine:
+            return std::sin(x);
+        case SignalType::Square:
+            return (std::sin(x) > 0 ? 1.0 : -1.0);
+        case SignalType::Triangle:
+            return 2.0 / M_PI * std::asin(std::sin(x));
+        default:
+            return 0.0;
+    }
 }
 
 // Полный сигнал
-double f(double t) {
-    return A * g(2 * M_PI * f0 * t + phi) + C;
+double f(double t, const SignalParams& params, SignalType type) {
+    return params.A * g(2 * M_PI * params.f0 * t + params.phi, type) + params.C;
 }
 
 // Численный расчёт среднего значения
-double calculate_avg(std::function<double(double)> signal, double T, int N = 1000) {
-    double dt = T / N; // Шаг дискретизации
+double calculate_avg(const SignalParams& params, SignalType type, double T, int N = 1000) {
+    double dt = T / N;
     double sum = 0.0;
 
-    for (int i = 0; i < N; ++i) {
-        double t = i * dt;
-        sum += signal(t) * dt; // Интегрирование методом трапеций
+    for (int i = 0; i < N - 1; ++i) {
+        double t1 = i * dt;
+        double t2 = (i + 1) * dt;
+        sum += (f(t1, params, type) + f(t2, params, type)) * 0.5 * dt;
     }
 
-    return sum / T; // Усреднение
+    return sum / T;
 }
 
 int main() {
-    // Вычисление среднего значения
-    double avg = calculate_avg(f, T);
-    
-    // Вывод результата
+    SignalParams params;
+    std::cout << "Введите амплитуду (A): ";
+    std::cin >> params.A;
+    std::cout << "Введите частоту (f0): ";
+    std::cin >> params.f0;
+    std::cout << "Введите фазу (phi): ";
+    std::cin >> params.phi;
+    std::cout << "Введите постоянную составляющую (C): ";
+    std::cin >> params.C;
+
+    SignalType type = SignalType::Sine; // Можно добавить выбор типа сигнала
+    double T = 1.0 / params.f0;
+
+    double avg = calculate_avg(params, type, T);
+
     std::cout << "Среднее значение сигнала: " << avg << " В" << std::endl;
 
     return 0;
