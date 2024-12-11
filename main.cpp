@@ -1,5 +1,8 @@
 #include <iostream>
 #include <cmath>
+#include <string>
+#include <sstream>
+#include <stdexcept>
 
 // Структура параметров сигнала
 struct SignalParams {
@@ -68,28 +71,69 @@ SignalType select_signal_type() {
     }
 }
 
+// Функция для безопасного ввода чисел
+double safe_input(const std::string& prompt) {
+    std::string input;
+    double value;
+
+    while (true) {
+        std::cout << prompt;
+        std::cin >> input;
+
+        // Проверка на команду выхода
+        if (input == "exit") {
+            throw std::runtime_error("Выход из программы.");
+        }
+
+        // Замена запятой на точку
+        for (auto& ch : input) {
+            if (ch == ',') {
+                ch = '.';
+            }
+        }
+
+        // Попытка преобразовать строку в число
+        try {
+            value = std::stod(input);
+            break;
+        } catch (const std::invalid_argument&) {
+            std::cerr << "Ошибка: Введите корректное число!\n";
+        } catch (const std::out_of_range&) {
+            std::cerr << "Ошибка: Число вне допустимого диапазона!\n";
+        }
+    }
+
+    return value;
+}
+
 int main() {
-    SignalParams params;
-    std::cout << "Введите амплитуду сигнала (U): ";
-    std::cin >> params.U;
-    std::cout << "Введите частоту сигнала (f0): ";
-    std::cin >> params.f0;
-    std::cout << "Введите фазовый сдвиг (phi): ";
-    std::cin >> params.phi;
-    std::cout << "Введите напряжение смещения (C): ";
-    std::cin >> params.C;
+    try {
+        while (true) { // Бесконечный цикл для повтора работы программы
+            SignalParams params;
+            params.U = safe_input("Введите амплитуду сигнала (U): ");
+            params.f0 = safe_input("Введите частоту сигнала (f0): ");
+            params.phi = safe_input("Введите фазовый сдвиг (phi): ");
+            params.C = safe_input("Введите напряжение смещения (C): ");
 
-    // Выбор типа сигнала
-    SignalType type = select_signal_type();
+            // Выбор типа сигнала
+            SignalType type = select_signal_type();
 
-    // Расчёт периода сигнала
-    double T = 1.0 / params.f0;
+            // Расчёт периода сигнала
+            if (params.f0 <= 0) {
+                std::cerr << "Ошибка: частота должна быть больше 0.\n";
+                continue; // Вернуться к началу цикла
+            }
+            double T = 1.0 / params.f0;
 
-    // Расчёт среднего значения
-    double avg = calculate_avg(params, type, T);
+            // Расчёт среднего значения
+            double avg = calculate_avg(params, type, T);
 
-    // Вывод результата
-    std::cout << "Среднее значение сигнала: " << avg << " В" << std::endl;
+            // Вывод результата
+            std::cout << "Среднее значение сигнала: " << avg << " В\n\n";
+        }
+    } catch (const std::exception& e) {
+        std::cout << e.what() << '\n';
+    }
 
     return 0;
 }
