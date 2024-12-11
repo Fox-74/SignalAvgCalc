@@ -3,7 +3,7 @@
 
 // Структура параметров сигнала
 struct SignalParams {
-    double A;    // Амплитуда
+    double U;    // Амплитуда
     double f0;   // Частота
     double phi;  // Фазовый сдвиг
     double C;    // Постоянная составляющая
@@ -28,7 +28,7 @@ double g(double x, SignalType type) {
 
 // Полный сигнал
 double f(double t, const SignalParams& params, SignalType type) {
-    return params.A * g(2 * M_PI * params.f0 * t + params.phi, type) + params.C;
+    return params.U * g(2 * M_PI * params.f0 * t + params.phi, type) + params.C;
 }
 
 // Численный расчёт среднего значения
@@ -47,13 +47,13 @@ double calculate_avg(const SignalParams& params, SignalType type, double T, int 
 
 int main() {
     SignalParams params;
-    std::cout << "Введите амплитуду (A): ";
-    std::cin >> params.A;
-    std::cout << "Введите частоту (f0): ";
+    std::cout << "Введите амплитуду сигнала (U): ";
+    std::cin >> params.U;
+    std::cout << "Введите частоту сигнала (f0): ";
     std::cin >> params.f0;
-    std::cout << "Введите фазу (phi): ";
+    std::cout << "Введите фазовый сдвиг (phi): ";
     std::cin >> params.phi;
-    std::cout << "Введите постоянную составляющую (C): ";
+    std::cout << "Введите напряжение смещения (C): ";
     std::cin >> params.C;
 
     SignalType type = SignalType::Sine; // Можно добавить выбор типа сигнала
