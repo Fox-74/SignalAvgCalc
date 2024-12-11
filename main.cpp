@@ -45,6 +45,29 @@ double calculate_avg(const SignalParams& params, SignalType type, double T, int 
     return sum / T;
 }
 
+// Функция для выбора типа сигнала
+SignalType select_signal_type() {
+    int choice;
+    std::cout << "Выберите форму сигнала:\n";
+    std::cout << "1 - Синусоидальный\n";
+    std::cout << "2 - Прямоугольный\n";
+    std::cout << "3 - Треугольный\n";
+    std::cout << "Ваш выбор: ";
+    std::cin >> choice;
+
+    switch (choice) {
+        case 1:
+            return SignalType::Sine;
+        case 2:
+            return SignalType::Square;
+        case 3:
+            return SignalType::Triangle;
+        default:
+            std::cout << "Неверный выбор, установлен сигнал по умолчанию (синусоидальный).\n";
+            return SignalType::Sine;
+    }
+}
+
 int main() {
     SignalParams params;
     std::cout << "Введите амплитуду сигнала (U): ";
@@ -56,11 +79,16 @@ int main() {
     std::cout << "Введите напряжение смещения (C): ";
     std::cin >> params.C;
 
-    SignalType type = SignalType::Sine; // Можно добавить выбор типа сигнала
+    // Выбор типа сигнала
+    SignalType type = select_signal_type();
+
+    // Расчёт периода сигнала
     double T = 1.0 / params.f0;
 
+    // Расчёт среднего значения
     double avg = calculate_avg(params, type, T);
 
+    // Вывод результата
     std::cout << "Среднее значение сигнала: " << avg << " В" << std::endl;
 
     return 0;
