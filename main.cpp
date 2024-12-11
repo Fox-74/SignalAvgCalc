@@ -6,6 +6,7 @@
 #include <map>
 #include <functional>
 #include <iomanip>
+#include <corecrt_math_defines.h>
 
 // Структура параметров сигнала
 struct SignalParams {
