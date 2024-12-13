@@ -5,8 +5,9 @@
 #include <stdexcept>
 #include <map>
 #include <functional>
+#include <vector>
 #include <iomanip>
-#include <corecrt_math_defines.h>
+#include <gnuplot-iostream.h> 
 
 // Структура параметров сигнала
 struct SignalParams {
@@ -121,6 +122,26 @@ SignalParams get_signal_params() {
     return params;
 }
 
+// Функция для построения графика сигнала
+void plot_signal(const SignalParams& params, SignalType type, double T) {
+    Gnuplot gp;
+    std::vector<std::pair<double, double>> points;
+
+    const int N = 1000; // Количество точек
+    double dt = T / N;
+
+    for (int i = 0; i < N; ++i) {
+        double t = i * dt;
+        points.emplace_back(t, f(t, params, type));
+    }
+
+    gp << "set title 'График сигнала'\n";
+    gp << "set xlabel 'Время (t), с'\n";
+    gp << "set ylabel 'Напряжение (U), В'\n";
+    gp << "plot '-' with lines title 'Сигнал'\n";
+    gp.send1d(points);
+}
+
 int main() {
     try {
         while (true) { // Бесконечный цикл для повтора работы программы
@@ -137,7 +158,12 @@ int main() {
 
             // Вывод результата
             std::cout << std::fixed << std::setprecision(5);
-            std::cout << "Среднее значение сигнала: " << avg << " В\n\n";
+            std::cout << "Среднее значение сигнала: " << avg << " В\n";
+
+            // Построение графика сигнала
+            plot_signal(params, type, T);
+
+            std::cout << "\n";
         }
     } catch (const std::exception& e) {
         std::cerr << e.what() << '\n';
